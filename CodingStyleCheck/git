@@ -1,0 +1,62 @@
+#!/bin/bash
+GIT=/usr/bin/git
+check_git_dir() {
+	[ -e ./.git ]&&echo $PWD&&return 0
+	for dir in ${PWD//\// };do
+		a=../$a
+		if [ -e $a/.git ];then
+			(cd $PWD/$a;echo $PWD)&&return 0
+		fi
+	done
+}
+
+TOPDIR=$(check_git_dir)
+
+case $1 in
+	pull|checkout)
+		if [ "$1" = "checkout" ]&&[ -e "$2" -o -e "$3" ];then
+			$GIT $*
+		else
+			if [ -e $TOPDIR/.ik_gitconfig ];then
+				while read branch_dir ;do
+					if [ "${branch_dir:0:1}" != "#" ];then
+						if [ -e $TOPDIR/$branch_dir ];then
+							(cd $TOPDIR/$branch_dir;echo -e "\033[36m$PWD\033[0m" ; $GIT $*)||{
+							echo git error 
+							echo branch dir : $branch_dir 
+					    		}
+						fi
+					fi
+				done<$TOPDIR/.ik_gitconfig
+			fi
+			echo -e "\033[33m$PWD\033[0m"
+			$GIT $* ||exit
+			[ -e "$TOPDIR/ik_platforms" ]&&{
+				if grep -q "CONFIG_TARGET_x86=y" $TOPDIR/.config  ;then
+					cp $TOPDIR/ik_platforms/x86.config $TOPDIR/.config
+				elif grep -q "CONFIG_TARGET_x86_64=y" $TOPDIR/.config  ;then
+					cp $TOPDIR/ik_platforms/x86_64.config $TOPDIR/.config
+				elif grep -q "CONFIG_TARGET_ramips_mt7620a_IKUAI8-T1=y" $TOPDIR/.config ;then
+					cp $TOPDIR/ik_platforms/mt7620_ikt1.config $TOPDIR/.config
+				elif grep -q "CONFIG_TARGET_ramips_mt7620a_HIWIFI1S=y" $TOPDIR/.config ;then
+					cp $TOPDIR/ik_platforms/mt7620_h1s.config $TOPDIR/.config
+				elif grep -q "CONFIG_TARGET_ramips_mt7620a_IKUAI8-XB1=y" $TOPDIR/.config ;then
+					cp $TOPDIR/ik_platforms/mt7620_ikxb1.config $TOPDIR/.config
+				else
+					cp $TOPDIR/ik_platforms/mips.config $TOPDIR/.config
+				fi
+			}
+		fi
+		;;
+	commit)
+		if [ ! -f $TOPDIR/.git/hooks/pre-commit ]; then
+			ln -s /usr/local/bin/pre-commit $TOPDIR/.git/hooks/pre-commit
+		fi
+		$GIT $*
+		;;
+	*)
+	    $GIT $*	
+		;;
+
+esac
+
