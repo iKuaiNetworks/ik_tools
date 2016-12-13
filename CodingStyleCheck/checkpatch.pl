@@ -47,7 +47,7 @@ my %ignore_type = ();
 my @ignore = ();
 my $help = 0;
 my $configuration_file = ".checkpatch.conf";
-my $max_line_length = 160;
+my $max_line_length = 512;
 my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
@@ -2813,6 +2813,11 @@ sub process {
 
 		if ($line =~ /^\+/ && $length > $max_line_length) {
 			my $msg_type = "LONG_LINE";
+			my $skip = 0;
+
+			if ($line =~ /awk/ or $line =~ /print/) {
+				$skip = 1;
+			}
 
 			# Check the allowed long line types first
 
@@ -2845,7 +2850,7 @@ sub process {
 				$msg_type = "LONG_LINE_STRING"
 			}
 
-			if ($msg_type ne "" &&
+			if ($skip &&  $msg_type ne "" &&
 			    (show_type("LONG_LINE") || show_type($msg_type))) {
 				WARN($msg_type,
 				     "line over $max_line_length characters\n" . $herecurr);
@@ -3274,7 +3279,7 @@ sub process {
 
 			my ($level, @ctx) = ctx_statement_level($linenr, $realcnt, 0);
 
-			if ($line =~ /^\+\t{6,}/) {
+			if ($line =~ /^\+\t{8,}/) {
 				WARN("DEEP_INDENTATION",
 				     "Too many leading tabs - consider code refactoring\n" . $herecurr);
 			}
