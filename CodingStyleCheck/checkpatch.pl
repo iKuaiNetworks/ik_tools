@@ -2670,7 +2670,8 @@ sub process {
 			    $fix) {
 				$fixed[$fixlinenr] =~ s/[\s\015]+$//;
 			}
-		} elsif (($rawline =~ /^\+.*\S\s+$/ || $rawline =~ /^\+\s+$/) && ($realfile !~ /\.(config|txt|md)$/)) {
+		} elsif (($rawline =~ /^\+.*\S\s+$/ || $rawline =~ /^\+\s+$/) &&
+			($realfile !~ /\.(config|txt|md|patch)$/) && ($rawline !~ /\*/)) {
 			my $herevet = "$here\n" . cat_vet($rawline) . "\n";
 			if (ERROR("TRAILING_WHITESPACE",
 				  "trailing whitespace\n" . $herevet) &&
@@ -3714,8 +3715,8 @@ sub process {
 
 # avoid LINUX_VERSION_CODE
 		if ($line =~ /\bLINUX_VERSION_CODE\b/) {
-			WARN("LINUX_VERSION_CODE",
-			     "LINUX_VERSION_CODE should be avoided, code should be for the version to which it is merged\n" . $herecurr);
+			#WARN("LINUX_VERSION_CODE",
+			 #    "LINUX_VERSION_CODE should be avoided, code should be for the version to which it is merged\n" . $herecurr);
 		}
 
 # check for uses of printk_ratelimit
@@ -4455,8 +4456,8 @@ sub process {
 			my $newcomp = $comp;
 			if ($lead !~ /(?:$Operators|\.)\s*$/ &&
 			    $to !~ /^(?:Constant|[A-Z_][A-Z0-9_]*)$/ &&
-			    WARN("CONSTANT_COMPARISON",
-				 "Comparisons should place the constant on the right side of the test\n" . $herecurr) &&
+			    #WARN("CONSTANT_COMPARISON",
+			#	 "Comparisons should place the constant on the right side of the test\n" . $herecurr) &&
 			    $fix) {
 				if ($comp eq "<") {
 					$newcomp = ">";
@@ -5740,8 +5741,8 @@ sub process {
 			if ($s =~ /^\s*;/ &&
 			    $function_name ne 'uninitialized_var')
 			{
-				WARN("AVOID_EXTERNS",
-				     "externs should be avoided in .c files\n" .  $herecurr);
+				#WARN("AVOID_EXTERNS",
+				 #    "externs should be avoided in .c files\n" .  $herecurr);
 			}
 
 			if ($paren_space =~ /\n/) {
@@ -5752,8 +5753,8 @@ sub process {
 		} elsif ($realfile =~ /\.c$/ && defined $stat &&
 		    $stat =~ /^.\s*extern\s+/)
 		{
-			WARN("AVOID_EXTERNS",
-			     "externs should be avoided in .c files\n" .  $herecurr);
+			#WARN("AVOID_EXTERNS",
+			 #    "externs should be avoided in .c files\n" .  $herecurr);
 		}
 
 		if ($realfile =~ /\.[ch]$/ && defined $stat &&
